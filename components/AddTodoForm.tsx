@@ -38,8 +38,11 @@ import { useForm } from "react-hook-form"
 import { todoformSchema, TodoFormValues } from "@/schema";
 import { createTodoAction } from '@/actions/todo.actions';
 import { Checkbox } from '@/components/ui/checkbox';
+import Spinner from './Spinner';
 const AddTodoForm = () => {
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [isopen, setOpen] = useState(true);
 
     const form = useForm<TodoFormValues>({
         resolver: zodResolver(todoformSchema),
@@ -52,19 +55,21 @@ const AddTodoForm = () => {
 
     })
 
-    const onSubmit = async (data: TodoFormValues) => {
-        console.log(data);
+    const onSubmit = async ({ title, body, completed }: TodoFormValues) => {
+        setLoading(true);
         await createTodoAction({
-            title: data.title,
-            body: data.body,
-            completed: data.completed,
+            title,
+            body,
+            completed,
         });
+        setLoading(false);
+        setOpen(false);
         setShowSuccessAlert(true);
     }
 
     return (
         <>
-            <Dialog>
+            <Dialog open={isopen} onOpenChange={setOpen}>
                 <form>
                     <DialogTrigger asChild>
                         <Button variant="default"> <Plus />Add To Do</Button>
@@ -134,7 +139,16 @@ const AddTodoForm = () => {
                                             </FormItem>
                                         )}
                                     />
-                                    <Button type="submit" >Save changes</Button>
+                                    <Button type="submit" disabled={loading} >
+                                        {loading ? (
+                                            <>
+                                                <Spinner />Saving...
+                                            </>
+                                        ) : (
+                                            "Save changes")
+                                        }
+
+                                    </Button>
 
                                 </form>
                             </Form>
