@@ -1,14 +1,14 @@
+import { getTodosAction } from "@/actions/todo.actions";
 import AddTodoForm from "@/components/AddTodoForm";
-export default function Home() {
+import TodoTable from "@/components/TodoTable";
+export default async function Home() {
+  const todos = await getTodosAction();
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
 
-      {/* <ul>
-        {todos.map(todo => (
-          <li key={todo.id}>{i++}: {todo.email}</li>
-        ))}
-      </ul> */}
+
       <AddTodoForm />
+      <TodoTable todos={todos} />
 
 
     </main>
