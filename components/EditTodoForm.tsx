@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Pen, Plus } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -19,65 +19,52 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea";
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { todoformSchema, TodoFormValues } from "@/schema";
-import { createTodoAction } from '@/actions/todo.actions';
+import { createTodoAction, updateTodoAction } from '@/actions/todo.actions';
 import { Checkbox } from '@/components/ui/checkbox';
 import Spinner from './Spinner';
-const AddTodoForm = ({ userId }: { userId: string | "" }) => {
-    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+import { ITodo } from '@/interfaces';
+const EditTodoForm = ({ todo }: { todo: ITodo }) => {
     const [loading, setLoading] = useState(false);
-    const [isopen, setOpen] = useState(true);
+    const [isopen, setOpen] = useState(false);
 
     const form = useForm<TodoFormValues>({
         resolver: zodResolver(todoformSchema),
         defaultValues: {
-            title: "",
-            body: "",
-            completed: false,
+            title: todo.title,
+            body: todo.body || "",
+            completed: todo.completed,
         },
         mode: "all",
 
     })
 
-    const onSubmit = async ({ title, body, completed }: TodoFormValues) => {
+    const onSubmit = async (data: TodoFormValues) => {
         setLoading(true);
-        await createTodoAction({
-            title,
-            body,
-            completed,
-            userId
-        });
+        /*Action*/
+        await updateTodoAction({ id: todo.id, title: data.title, body: data.body as string, completed: data.completed });
         setLoading(false);
         setOpen(false);
-        setShowSuccessAlert(true);
     }
 
     return (
         <>
-            <Dialog onOpenChange={setOpen}>
+            <Dialog open={isopen} onOpenChange={setOpen}>
                 <form>
                     <DialogTrigger asChild>
-                        <Button variant="default"> <Plus />Add To Do</Button>
+                        <Button size={'icon'} >
+                            <Pen size={16} />
+                        </Button>
                     </DialogTrigger>
                     <DialogContent className="">
                         <DialogHeader>
-                            <DialogTitle>New Todo</DialogTitle>
+                            <DialogTitle>Edit Todo</DialogTitle>
                             <DialogDescription>
                                 Make new todo here. Click save when you&apos;re
                                 done.
@@ -158,23 +145,9 @@ const AddTodoForm = ({ userId }: { userId: string | "" }) => {
                     </DialogContent>
                 </form>
             </Dialog>
-            <AlertDialog open={showSuccessAlert} onOpenChange={setShowSuccessAlert}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Added successfully✅</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            added successfully
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setShowSuccessAlert(false)}>
-                            Accept
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+
         </>
     )
 }
 
-export default AddTodoForm
+export default EditTodoForm
